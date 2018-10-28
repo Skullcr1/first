@@ -19,6 +19,9 @@ start:
         MOV AX, @data                   ; 
         MOV DS, AX                      ; 
  
+	; ---------------------------------------------
+	; PROMPT USER START
+	; ---------------------------------------------
     DATA_INPUT:
         MOV AH, 09h
         MOV DX, offset enter_message
@@ -37,8 +40,49 @@ start:
         MOV CL, input_data_length
         LEA BX, buffer
         MOV DL, 41h
-        MOV dh, 5Ah                
-        
+        MOV dh, 5Ah            
+	; ---------------------------------------------
+	; PROMPT USER END
+	; ---------------------------------------------
+	
+	; ---------------------------------------------
+	; ARGUMENT LINES START
+	; Execution: str abrakadabra
+	;
+	; command line arguments start at address 80h
+	; first byte is length
+	; second is space
+	; with third our string starts
+	; ---------------------------------------------
+	; READ_INPUT_ARGV:
+		
+		; XOR AX, AX
+		; MOV SI, 80h 
+		; MOV AL, ES:[SI]
+		; SUB AL, 1 ;exclude space
+		; MOV input_data_length, AL
+		; ADD SI, 2 ;skip space
+		; MOV DI, offset buffer
+
+	; READ_INPUT_ARGV_LETTER:	
+		; MOV AL, ES:[SI]
+		; MOV DS:[DI], AL
+		; INC SI
+		; INC DI
+		; CMP AL, 0Dh
+		; JNE READ_INPUT_ARGV_LETTER
+	
+	; ---------------------------------------------
+	; ARGUMENT LINES END
+	; ---------------------------------------------
+	
+    LETTER_CASE:    
+        xor cl, cl
+        mov cl, input_data_length
+        lea bx, buffer
+        mov dl, 41h
+        mov dh, 5Ah
+               
     CHECK_UPPER_CASE:
         CMP [BX], DL
         JB KEEP_CASE
@@ -51,7 +95,7 @@ start:
         DEC CL
         CMP CL, 0
         JNE CHECK_UPPER_CASE
-                        
+
     PREPARE_ITERATION_BUFFERS:
         MOV SI, offset buffer
         MOV DI, offset buffer
