@@ -3,14 +3,14 @@ buffer_size EQU 255
 .stack 100h
 
 .data
-    ent    db "Enter symbols: $"
+    enter_message    DB "Enter symbols: $"
     input_buffer_reserved DB buffer_size
-    input_data_length db ?
-    buffer  db buffer_size dup (?)
-    end_of_string  db  13, 10, '$'
-    ; buffer db 'civca$'
-    result_message    db "Count of misplaced letters: $"
-    misplaced_letters_count db 0h, 24h
+    input_data_length DB ?
+    buffer  DB buffer_size dup (?)
+    end_of_string  DB  13, 10, '$'
+    ; buffer DB 'civca$'
+    result_message    DB "Count of misplaced letters: $"
+    misplaced_letters_count DB 0h, 24h
     ;end_of_string equ 0dh
 .code
 
@@ -20,41 +20,38 @@ start:
         MOV DS, AX                      ; 
  
     DATA_INPUT:
-        mov ah, 09h
-        mov dx, offset ent 
-        int 21h
+        MOV AH, 09h
+        MOV DX, offset enter_message
+        INT 21h
        
-        mov ah, 0Ah
-        mov dx, offset input_buffer_reserved
-        int 21h
+        MOV AH, 0Ah
+        MOV DX, offset input_buffer_reserved
+        INT 21h
         
-        MOV	ah, 9
-        MOV	dx, offset end_of_string
+        MOV	AH, 9
+        MOV	DX, offset end_of_string
         INT	21h	
+        
     LETTER_CASE:    
-        xor cl, cl
-        mov cl, input_data_length
-        lea bx, buffer
-        mov dl, 41h
-        mov dh, 5Ah
-        
-        
+        xor CL, CL
+        MOV CL, input_data_length
+        LEA BX, buffer
+        MOV DL, 41h
+        MOV dh, 5Ah                
         
     CHECK_UPPER_CASE:
-        CMP [BX], dl
+        CMP [BX], DL
         JB KEEP_CASE
         CMP [BX], dh
         JA KEEP_CASE
         ADD	byte ptr [BX], 20h
         
     KEEP_CASE:
-        inc bx 
-        dec cl
-        cmp cl, 0
+        INC BX 
+        DEC CL
+        CMP CL, 0
         JNE CHECK_UPPER_CASE
-        
-        
-        
+                        
     PREPARE_ITERATION_BUFFERS:
         MOV SI, offset buffer
         MOV DI, offset buffer
@@ -104,24 +101,26 @@ start:
         JMP PRINT_MISPLACED_LETTERS
     
     PRINT_MISPLACED_LETTERS:
-          ; xor ax, ax
-        MOV	ah, 9
-        MOV	dx, offset result_message
+          ; xor AX, AX
+        MOV	AH, 9
+        MOV	DX, offset result_message
         INT	21h	
     HEX_TO_DEC:    
-        xor ax, ax
-        mov al, misplaced_letters_count
+        xor AX, AX
+        MOV al, misplaced_letters_count
         AAM
-        add ax, 3030h
-        push ax
-        mov dl,ah
-        mov ah, 02h
-        int 21h
-        pop dx
-        mov ah, 02h
-        int 21h
-    
-    
+        
+        ADD AX, 3030h
+        PUSH AX
+        
+        MOV DL,AH
+        MOV AH, 02h
+        INT 21h
+        
+        POP DX
+        MOV AH, 02h
+        INT 21h
+       
     EXIT:
         MOV AH, 4ch             ; griztame i dos'a
         INT 21h                 ; dos'o INTeruptas
@@ -137,7 +136,7 @@ start:
         CMP AL, BL
         JE END_ADD_MISPLACED_LETTERS 
         INC CL
-        SHL Cl,1
+        SHL CL,1
         
         ADD misplaced_letters_count, CL
         
@@ -145,6 +144,6 @@ start:
         
         MOV SP, BP ;restore stack
         POP BP
-        RET ; pop parameters off stack and return
+        RET ; POP parameters off stack and return
     ADD_MISPLACED_LETTERS ENDP
 end start
