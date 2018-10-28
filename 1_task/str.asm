@@ -32,6 +32,28 @@ start:
         MOV	dx, offset end_of_string
         INT	21h	
         
+        xor cl, cl
+        mov cl, input_data_length
+        lea bx, buffer
+        mov dl, 41h
+        mov dh, 5Ah
+        
+        
+        
+    CHECK_UPPER_CASE:
+        CMP [ds:bx], dl
+        jb KEEP_CASE
+        CMP [DS:BX], dh
+        JA KEEP_CASE
+        ADD	byte ptr [ds:bx], 20h
+        
+    KEEP_CASE:
+        inc bx 
+        dec cl
+        cmp cl, 0
+        jne CHECK_UPPER_CASE
+        
+        
         
     PREPARE_ITERATION_BUFFERS:
         MOV SI, offset buffer
