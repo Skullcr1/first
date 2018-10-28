@@ -40,6 +40,7 @@ start:
 	
 	; ---------------------------------------------
 	; ARGUMENT LINES START
+	; Execution: str abrakadabra
 	;
 	; command line arguments start at address 80h
 	; first byte is length
@@ -47,7 +48,6 @@ start:
 	; with third our string starts
 	; ---------------------------------------------
 	READ_INPUT_ARGV:
-		
 		
 		XOR AX, AX
 		MOV SI, 80h 
