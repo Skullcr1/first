@@ -31,7 +31,7 @@ start:
         MOV	ah, 9
         MOV	dx, offset end_of_string
         INT	21h	
-        
+    LETTER_CASE:    
         xor cl, cl
         mov cl, input_data_length
         lea bx, buffer
@@ -41,17 +41,17 @@ start:
         
         
     CHECK_UPPER_CASE:
-        CMP [ds:bx], dl
-        jb KEEP_CASE
-        CMP [DS:BX], dh
+        CMP [BX], dl
+        JB KEEP_CASE
+        CMP [BX], dh
         JA KEEP_CASE
-        ADD	byte ptr [ds:bx], 20h
+        ADD	byte ptr [BX], 20h
         
     KEEP_CASE:
         inc bx 
         dec cl
         cmp cl, 0
-        jne CHECK_UPPER_CASE
+        JNE CHECK_UPPER_CASE
         
         
         
@@ -108,7 +108,7 @@ start:
         MOV	ah, 9
         MOV	dx, offset result_message
         INT	21h	
-        
+    HEX_TO_DEC:    
         xor ax, ax
         mov al, misplaced_letters_count
         AAM
