@@ -9,7 +9,7 @@ buffer_size EQU 255
     buffer  db buffer_size dup (?)
     end_of_string  db  13, 10, '$'
     ; buffer db 'civca$'
-    result_message    db "Count of misplaced letters: "
+    result_message    db "Count of misplaced letters: $"
     misplaced_letters_count db 0h, 24h
     ;end_of_string equ 0dh
 .code
@@ -83,7 +83,9 @@ start:
     
     PRINT_MISPLACED_LETTERS:
           ; xor ax, ax
-       
+        MOV	ah, 9
+        MOV	dx, offset result_message
+        INT	21h	
         
         xor ax, ax
         mov al, misplaced_letters_count
