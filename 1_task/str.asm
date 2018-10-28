@@ -35,12 +35,7 @@ start:
         MOV	DX, offset end_of_string
         INT	21h	
         
-    LETTER_CASE:    
-        xor CL, CL
-        MOV CL, input_data_length
-        LEA BX, buffer
-        MOV DL, 41h
-        MOV dh, 5Ah            
+             
 	; ---------------------------------------------
 	; PROMPT USER END
 	; ---------------------------------------------
@@ -76,12 +71,12 @@ start:
 	; ARGUMENT LINES END
 	; ---------------------------------------------
 	
-    LETTER_CASE:    
-        xor cl, cl
-        mov cl, input_data_length
-        lea bx, buffer
-        mov dl, 41h
-        mov dh, 5Ah
+     LETTER_CASE:    
+        XOR CL, CL
+        MOV CL, input_data_length
+        LEA BX, buffer
+        MOV DL, 41h
+        MOV dh, 5Ah  
                
     CHECK_UPPER_CASE:
         CMP [BX], DL
@@ -145,12 +140,12 @@ start:
         JMP PRINT_MISPLACED_LETTERS
     
     PRINT_MISPLACED_LETTERS:
-          ; xor AX, AX
+          ; XOR AX, AX
         MOV	AH, 9
         MOV	DX, offset result_message
         INT	21h	
     HEX_TO_DEC:    
-        xor AX, AX
+        XOR AX, AX
         MOV al, misplaced_letters_count
         AAM
         
