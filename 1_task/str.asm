@@ -18,26 +18,63 @@ start:
     DEFINE_DATA:
         MOV AX, @data                   ; 
         MOV DS, AX                      ; 
- 
-    DATA_INPUT:
-        mov ah, 09h
-        mov dx, offset ent 
-        int 21h
+	; ---------------------------------------------
+	; PROMPT USER START
+	; ---------------------------------------------
+    ; DATA_INPUT:
+		
+        ; mov ah, 09h
+        ; mov dx, offset ent 
+        ; int 21h
        
-        mov ah, 0Ah
-        mov dx, offset input_buffer_reserved
-        int 21h
+        ; mov ah, 0Ah
+        ; mov dx, offset input_buffer_reserved
+        ; int 21h
         
-        MOV	ah, 9
-        MOV	dx, offset end_of_string
-        INT	21h	
+        ; MOV	ah, 9
+        ; MOV	dx, offset end_of_string
+        ; INT	21h	
+	; ---------------------------------------------
+	; PROMPT USER END
+	; ---------------------------------------------
+	
+	; ---------------------------------------------
+	; ARGUMENT LINES START
+	; Execution: str abrakadabra
+	;
+	; command line arguments start at address 80h
+	; first byte is length
+	; second is space
+	; with third our string starts
+	; ---------------------------------------------
+	READ_INPUT_ARGV:
+		
+		XOR AX, AX
+		MOV SI, 80h 
+		MOV AL, ES:[SI]
+		SUB AL, 1 ;exclude space
+		MOV input_data_length, AL
+		ADD SI, 2 ;skip space
+		MOV DI, offset buffer
+
+	READ_INPUT_ARGV_LETTER:	
+		MOV AL, ES:[SI]
+		MOV DS:[DI], AL
+		INC SI
+		INC DI
+		CMP AL, 0Dh
+		JNE READ_INPUT_ARGV_LETTER
+	
+	; ---------------------------------------------
+	; ARGUMENT LINES END
+	; ---------------------------------------------
+	
     LETTER_CASE:    
         xor cl, cl
         mov cl, input_data_length
         lea bx, buffer
         mov dl, 41h
         mov dh, 5Ah
-        
         
         
     CHECK_UPPER_CASE:
@@ -52,8 +89,6 @@ start:
         dec cl
         cmp cl, 0
         JNE CHECK_UPPER_CASE
-        
-        
         
     PREPARE_ITERATION_BUFFERS:
         MOV SI, offset buffer
