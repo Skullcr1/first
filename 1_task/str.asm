@@ -82,12 +82,21 @@ start:
         JMP PRINT_MISPLACED_LETTERS
     
     PRINT_MISPLACED_LETTERS:
-              
-        MOV DX, offset result_message
-        ; translate into decimal
-        ;ADD DL, 30h
-        MOV AH, 09h
-        INT 21h
+          ; xor ax, ax
+       
+        
+        xor ax, ax
+        mov al, misplaced_letters_count
+        AAM
+        add ax, 3030h
+        push ax
+        mov dl,ah
+        mov ah, 02h
+        int 21h
+        pop dx
+        mov ah, 02h
+        int 21h
+    
     
     EXIT:
         MOV AH, 4ch             ; griztame i dos'a
