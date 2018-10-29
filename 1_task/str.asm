@@ -24,15 +24,15 @@ start:
 	; ---------------------------------------------
     DATA_INPUT:
         MOV AH, 09h
-        MOV DX, offset enter_message
+        MOV DX, offset enter_message            ;prints welcome message
         INT 21h
        
         MOV AH, 0Ah
-        MOV DX, offset input_buffer_reserved
+        MOV DX, offset input_buffer_reserved    ;stores string
         INT 21h
         
         MOV	AH, 9
-        MOV	DX, offset end_of_string
+        MOV	DX, offset end_of_string            ;prints '$'
         INT	21h	
         
              
@@ -71,39 +71,39 @@ start:
 	; ARGUMENT LINES END
 	; ---------------------------------------------
 	
-     LETTER_CASE:    
+     LETTER_CASE:    ;preparing to check letter case
         XOR CL, CL
         MOV CL, input_data_length
         LEA BX, buffer
-        MOV DL, 41h
-        MOV dh, 5Ah  
+        MOV DL, 41h  ;symbol 'A'
+        MOV DH, 5Ah  ;symbol 'Z'
                
-    CHECK_UPPER_CASE:
-        CMP [BX], DL
+    CHECK_UPPER_CASE:   ;;checking if letter is [A;Z]
+        CMP [BX], DL    
         JB KEEP_CASE
-        CMP [BX], dh
+        CMP [BX], DH
         JA KEEP_CASE
-        ADD	byte ptr [BX], 20h
+        ADD	byte ptr [BX], 20h  ;if it's upper case then add 20h to get [a;z]
         
-    KEEP_CASE:
+    KEEP_CASE:  ;checking next symbol
         INC BX 
         DEC CL
         CMP CL, 0
         JNE CHECK_UPPER_CASE
 
-    PREPARE_ITERATION_BUFFERS:
+    PREPARE_ITERATION_BUFFERS:  ;loading buffer into SI and DI
         MOV SI, offset buffer
         MOV DI, offset buffer
         XOR AH, AH
-        MOV AL, input_data_length ;point DI to the last item
-        ADD DI, AX
-        SUB DI, 1  
+        MOV AL, input_data_length 
+        ADD DI, AX ;;point DI to the last symbol, 
+        SUB DI, 1  ;to get rid of last symbol which is cr
         CMP SI, DI ;check if only one letter was provided
         JE PRINT_MISPLACED_LETTERS
     
-    CHECK_IF_EVEN:
+    CHECK_IF_EVEN:  
         MOV CL, input_data_length 
-        TEST CL, 1
+        TEST CL, 1        ;using logical operation and to determine if it even or odd number
         JZ ITERATE_LETTERS_EVEN
         
     ITERATE_LETTERS_ODD:
@@ -115,9 +115,9 @@ start:
         
         PUSH AX
         PUSH BX
-        CALL ADD_MISPLACED_LETTERS
+        CALL ADD_MISPLACED_LETTERS ;calling procedure
                        
-        CMP SI, DI
+        CMP SI, DI  ;comparing to determine if we checked every symbol 
         JNE ITERATE_LETTERS_ODD
         JMP PRINT_MISPLACED_LETTERS
         
@@ -133,7 +133,7 @@ start:
         CALL ADD_MISPLACED_LETTERS
         
         MOV DX, DI
-        ADD DX, 1
+        ADD DX, 1   ;cause it's even number, we have to add
         
         CMP SI, DX
         JNE ITERATE_LETTERS_EVEN

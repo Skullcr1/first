@@ -7,8 +7,8 @@
 
 ## TODO
 - [x] Handle odd and even input strings
-- [ ] Convert result into decimail
-- [ ] Convert input to small case
+- [x] Convert result into decimal
+- [x] Convert input to small case
 
 
 
