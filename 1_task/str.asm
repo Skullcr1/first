@@ -28,7 +28,7 @@ start:
         INT 21h
        
         MOV AH, 0Ah
-        MOV DX, offset input_buffer_reserved    ;stores string
+        MOV DX, offset input_buffer_reserved    ;
         INT 21h
         
         MOV	AH, 9
@@ -40,36 +40,6 @@ start:
 	; PROMPT USER END
 	; ---------------------------------------------
 	
-	; ---------------------------------------------
-	; ARGUMENT LINES START
-	; Execution: str abrakadabra
-	;
-	; command line arguments start at address 80h
-	; first byte is length
-	; second is space
-	; with third our string starts
-	; ---------------------------------------------
-	; READ_INPUT_ARGV:
-		
-		; XOR AX, AX
-		; MOV SI, 80h 
-		; MOV AL, ES:[SI]
-		; SUB AL, 1 ;exclude space
-		; MOV input_data_length, AL
-		; ADD SI, 2 ;skip space
-		; MOV DI, offset buffer
-
-	; READ_INPUT_ARGV_LETTER:	
-		; MOV AL, ES:[SI]
-		; MOV DS:[DI], AL
-		; INC SI
-		; INC DI
-		; CMP AL, 0Dh
-		; JNE READ_INPUT_ARGV_LETTER
-	
-	; ---------------------------------------------
-	; ARGUMENT LINES END
-	; ---------------------------------------------
 	
      LETTER_CASE:    ;preparing to check letter case
         XOR CL, CL
@@ -144,12 +114,14 @@ start:
         MOV	AH, 9
         MOV	DX, offset result_message
         INT	21h	
-    HEX_TO_DEC:    
-        XOR AX, AX
-        MOV al, misplaced_letters_count
+
+    HEX_TO_DEC:  
+        XOR AX, AX      
+        MOV AL, misplaced_letters_count
         AAM
         
         ADD AX, 3030h
+        
         PUSH AX
         
         MOV DL,AH
