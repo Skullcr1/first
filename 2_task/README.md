@@ -8,7 +8,9 @@
 - [] Argc/Argv suvokimas ir panaudojimas asm
 - [] Nuskaitymas duomenų iš failo
 - [] nuskaitymas kiek simbolių ir žodžių
-žodis - simbolių junginys, atskirtas tarpais
+
+*žodis - simbolių junginys, atskirtas tarpais*
+
 - [] nustatymas kiek mažųjų raidžių ir didžiųjų
 - [] panaudojimas argc/argv 
 - [] išvesti duomenis iš failo
