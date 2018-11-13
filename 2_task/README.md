@@ -6,7 +6,7 @@
 
 ## TODO
 - [] Argc/Argv suvokimas ir panaudojimas asm
-- [] Nuskaitymas duomenų iš failo
+- [x] Nuskaitymas duomenų iš failo
 - [] nuskaitymas kiek simbolių ir žodžių
 
 *žodis - simbolių junginys, atskirtas tarpais*
