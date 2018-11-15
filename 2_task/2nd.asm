@@ -90,7 +90,7 @@ SCREWING_THROUGH_BUFFER:
             je 1st_space
             cmp [bx + 1], 20h
             ja word_count
-            
+
         word_count:
             inc word_number         
             inc bx
@@ -128,8 +128,6 @@ SCREWING_THROUGH_BUFFER:
             jmp checking1
 
            
-
-
         
             ; ignore multiple spaces
        

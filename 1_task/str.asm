@@ -115,22 +115,45 @@ start:
         MOV	DX, offset result_message
         INT	21h	
 
-    HEX_TO_DEC:  
-        XOR AX, AX      
-        MOV AL, misplaced_letters_count
-        AAM
+    ; HEX_TO_DEC:  
+    ;     XOR AX, AX      
+    ;     MOV AL, misplaced_letters_count
+    ;     AAM
         
-        ADD AX, 3030h
+    ;     ADD AX, 3030h
         
-        PUSH AX
+    ;     PUSH AX
         
-        MOV DL,AH
-        MOV AH, 02h
+    ;     MOV DL,AH
+    ;     MOV AH, 02h
+    ;     INT 21h
+        
+    ;     POP DX
+    ;     MOV AH, 02h
+    ;     INT 21h
+     HEX_TO_DEC:
+                XOR BX, BX
+                 XOR AX, AX
+                MOV     CL, 10
+         MOV AL, misplaced_letters_count
+                LOOP1:
+
+                DIV CL
+                inc BX
+                PUSH AX
+                XOR AH, AH
+
+                TEST al, al
+                jnz LOOP1
+
+                LOOP2:
+                POP DX
+                MOV DL, DH
+                ADD DL, '0'
+                MOV AH, 02h
         INT 21h
-        
-        POP DX
-        MOV AH, 02h
-        INT 21h
+                dec bx
+                jnz LOOP2
        
     EXIT:
         MOV AH, 4ch             ; griztame i dos'a
