@@ -11,7 +11,7 @@
 
   ;*************************
   symbol_number db ?
-  word_number db?
+  word_number db ?
   lcase_letter db ?
   dcase_letter db ?    
 
@@ -34,7 +34,7 @@ Open_file:
     mov data_descr, ax
     jmp count_numbers
 
-count_numbers:
+reading_from_buffer:
     mov ah, 3Fh
     mov bx, data_descr
     mov cx, 10
@@ -43,8 +43,9 @@ count_numbers:
     jc reading_error
     mov buffer_number, ax
     
-    call Count_symbols
-
+    cmp buffer_number, 0
+    ja SCREWING_THROUGH_BUFFER
+    jmp close_file
 
 
 
@@ -62,51 +63,75 @@ exit:
     int 21h
 end start
 
-PROC Count_symbols
-    push ax
-    push bx
-    push cx
-    push dx
+; PROC Count_symbols
+;     push ax
+;     push bx
+;     push cx
+;     push dx
 
+SCREWING_THROUGH_BUFFER:
         lea bx, read_buffer
         mov cx, buffer_number
-
-        checking:
-        
-        cmp [bx], 61h
-        jae small_letter
-        cmp [bx], 41h
-        jae big_letter
+        checking1:
+            cmp cx, 0
+            je reading_from_buffer
+        checking:  
+            cmp [bx], 20h
+            je space
+            cmp [bx], 61h
+            jae small_letter
+            cmp [bx], 41h
+            jae big_letter
+            cmp [bx], 20h
+            ja not_letter
        
+        space:
+            cmp cx, buffer_number
+            je 1st_space
+            cmp [bx + 1], 20h
+            ja word_count
+            
+        word_count:
+            inc word_number         
+            inc bx
+            dec cx
+            jmp checking1
 
-
+        1st_space:
+            dec buffer_number
+            inc bx
+            dec cx
+            jmp checking1
 
         not_letter:
-        inc bx 
-        dec cx
-        jmp checking 
+            inc bx 
+            dec cx
+            inc symbol_number
+            jmp checking1
 
         big_letter:
-        cmp [bx], 5A
-        ja not_letter
-        inc dcase_letter
-        inc bx
-        dec cx
-        jmp checking
+            cmp [bx], 5A
+            ja not_letter
+            inc dcase_letter
+            inc bx
+            dec cx
+            inc symbol_number
+            jmp checking1
 
         small_letter:
-        cmp [bx], 7A
-        jae not_letter
-        inc lcase_letter
-        inc bx
-        dec cx
-        jmp checking
+            cmp [bx], 7A
+            jae not_letter
+            inc lcase_letter
+            inc bx
+            dec cx
+            inc symbol_number
+            jmp checking1
 
-
+           
 
 
         
-
+            ; ignore multiple spaces
        
 
        

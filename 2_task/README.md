@@ -9,6 +9,9 @@
 - [x] Nuskaitymas duomenų iš failo
 - [] nuskaitymas kiek simbolių ir žodžių
 
+
+//spacebar nustato - žodis ar ne; jei 2 spacebar niekas nevyksta; tarp spacebarų turi būti min. 2 simboliai; enteris tą patį atlieką ką spacebar; ignore multiple spaces
+
 *žodis - simbolių junginys, atskirtas tarpais*
 
 - [] nustatymas kiek mažųjų raidžių ir didžiųjų
