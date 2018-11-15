@@ -71,15 +71,40 @@ PROC Count_symbols
         lea bx, read_buffer
         mov cx, buffer_number
 
-        cmp [bx], 41h
-        jb not_letter
-        cmp [bx], 5Bh
-        ja big_letter
-        cmp [bx], 61h
-        jb not_letter
-        cmp[bx], 7Bh
-        jb small_letter
+        checking:
         
+        cmp [bx], 61h
+        jae small_letter
+        cmp [bx], 41h
+        jae big_letter
+       
+
+
+
+        not_letter:
+        inc bx 
+        dec cx
+        jmp checking 
+
+        big_letter:
+        cmp [bx], 5A
+        ja not_letter
+        inc dcase_letter
+        inc bx
+        dec cx
+        jmp checking
+
+        small_letter:
+        cmp [bx], 7A
+        jae not_letter
+        inc lcase_letter
+        inc bx
+        dec cx
+        jmp checking
+
+
+
+
         
 
        
