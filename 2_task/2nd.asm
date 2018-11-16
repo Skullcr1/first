@@ -47,30 +47,9 @@ reading_from_buffer:
     ja SCREWING_THROUGH_BUFFER
     jmp close_file
 
-
-
-
-reading_error:
-    mov ah, 09h
-    mov dx, error_message
-    int 21h
-    jmp exit
-
-
-exit:
-    mov ah, 4ch
-    mov al, 0
-    int 21h
-end start
-
-; PROC Count_symbols
-;     push ax
-;     push bx
-;     push cx
-;     push dx
-
 SCREWING_THROUGH_BUFFER:
         lea bx, read_buffer
+        mov si, bx
         mov cx, buffer_number
         checking1:
             cmp cx, 0
@@ -87,7 +66,7 @@ SCREWING_THROUGH_BUFFER:
        
         space:
             cmp cx, buffer_number
-            je 1st_space
+            je st_space
             cmp [bx + 1], 20h
             ja word_count
 
@@ -97,7 +76,7 @@ SCREWING_THROUGH_BUFFER:
             dec cx
             jmp checking1
 
-        1st_space:
+        st_space:
             dec buffer_number
             inc bx
             dec cx
@@ -110,7 +89,7 @@ SCREWING_THROUGH_BUFFER:
             jmp checking1
 
         big_letter:
-            cmp [bx], 5A
+            cmp [bx], 5Ah
             ja not_letter
             inc dcase_letter
             inc bx
@@ -119,7 +98,7 @@ SCREWING_THROUGH_BUFFER:
             jmp checking1
 
         small_letter:
-            cmp [bx], 7A
+            cmp [bx], 7Ah
             jae not_letter
             inc lcase_letter
             inc bx
@@ -127,10 +106,63 @@ SCREWING_THROUGH_BUFFER:
             inc symbol_number
             jmp checking1
 
+
+
+reading_error:
+    mov ah, 09h
+    mov dl, error_message
+    int 21h
+    jmp exit
+
+
+Printing_letters:
+
+
+
+
+
+
+
+exit:
+    mov ah, 4ch
+    mov al, 0
+    int 21h
+end start
+
+; PROC Count_symbols
+;     push ax
+;     push bx
+;     push cx
+;     push dx
+
+
            
         
             ; ignore multiple spaces
        
 
        
-    
+    HEX_TO_DEC:
+                XOR BX, BX
+                XOR AX, AX
+                MOV     CL, 10
+                MOV AL, lcase_letter
+                LOOP1:
+
+                DIV CL
+                inc BX
+                PUSH AX
+                XOR AH, AH
+
+                TEST al, al
+                jnz LOOP1
+
+                LOOP2:
+                POP DX
+                MOV DL, DH
+                ADD DL, '0'
+                MOV AH, 02h
+        INT 21h
+                dec bx
+                jnz LOOP2
+

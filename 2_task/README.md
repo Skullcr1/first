@@ -6,14 +6,14 @@
 
 ## TODO
 - [] Argc/Argv suvokimas ir panaudojimas asm
-- [x] Nuskaitymas duomenų iš failo
-- [] nuskaitymas kiek simbolių ir žodžių
+- [] Nuskaitymas duomenų iš failo (teoriškai taip)
+- [] nuskaitymas kiek simbolių ir žodžių (teoriškai taip)
 
 
 //spacebar nustato - žodis ar ne; jei 2 spacebar niekas nevyksta; tarp spacebarų turi būti min. 2 simboliai; enteris tą patį atlieką ką spacebar; ignore multiple spaces
 
 *žodis - simbolių junginys, atskirtas tarpais*
 
-- [] nustatymas kiek mažųjų raidžių ir didžiųjų
-- [] panaudojimas argc/argv 
+- [] nustatymas kiek mažųjų raidžių ir didžiųjų (teoriškai taip)
 - [] išvesti duomenis iš failo
+
