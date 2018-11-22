@@ -3,8 +3,9 @@
 
 .data
   txt_file db "data.txt", 0
-  text_length DB ?
+  
   read_buffer db 10 dup (?)
+  text_length DB ?
   data_descr dw ?
   buffer_number dw 0
   error_message db "error$"
@@ -33,7 +34,7 @@ Open_file:
     jc reading_error
     
     mov data_descr, ax
-    jmp SCREWING_THROUGH_BUFFER
+    jmp reading_from_buffer
 reading_error:
     mov ah, 09h
     mov dl, error_message
@@ -45,56 +46,61 @@ reading_from_buffer:
     mov cx, 10
     lea dx, read_buffer
     int 21h
+    push bx
     jc reading_error
     mov buffer_number, ax
     
     cmp buffer_number, 0
     ja SCREWING_THROUGH_BUFFER
+    pop bx
     jmp close_file
 
 SCREWING_THROUGH_BUFFER:
-        lea bx, read_buffer
-        
+        xor bx, bx
+        ; mov bx, dx
+        lea si, read_buffer
+        mov bx, [si]
         mov cx, buffer_number
         checking1:
             cmp cx, 0
             je reading_from_buffer
         checking:  
-            cmp [bx], 20h
+            cmp bx, 20h
             je space
-            cmp [bx], 61h
+            cmp bx, 61h
             jae small_letter
-            cmp [bx], 41h
+            cmp bx, 41h
             jae big_letter
-            cmp [bx], 20h
+            cmp bx, 20h
             ja not_letter
        
         space:
             cmp cx, buffer_number
             je st_space
-            cmp [bx + 1], 20h
+            inc si
+            cmp bx, 20h
             ja word_count
 
         word_count:
             inc word_number         
-            inc bx
+            inc si
             dec cx
             jmp checking1
 
         st_space:
             dec buffer_number
-            inc bx
+            inc si
             dec cx
             jmp checking1
 
         not_letter:
-            inc bx 
+            inc si 
             dec cx
             inc symbol_number
             jmp checking1
 
         big_letter:
-            cmp [bx], 5Ah
+            cmp si, 5Ah
             ja not_letter
             inc dcase_letter
             inc bx
@@ -103,10 +109,10 @@ SCREWING_THROUGH_BUFFER:
             jmp checking1
 
         small_letter:
-            cmp [bx], 7Ah
+            cmp bx, 7Ah
             jae not_letter
             inc lcase_letter
-            inc bx
+            inc si
             dec cx
             inc symbol_number
             jmp checking1
@@ -118,7 +124,7 @@ SCREWING_THROUGH_BUFFER:
 
 close_file:
     xor cx, cx
-    mov cl, dcase_letter
+    mov cl, lcase_letter
     mov ah, 3Eh
     int 21h
     jmp exit
