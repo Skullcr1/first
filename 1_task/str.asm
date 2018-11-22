@@ -115,27 +115,11 @@ start:
         MOV	DX, offset result_message
         INT	21h	
 
-    ; HEX_TO_DEC:  
-    ;     XOR AX, AX      
-    ;     MOV AL, misplaced_letters_count
-    ;     AAM
-        
-    ;     ADD AX, 3030h
-        
-    ;     PUSH AX
-        
-    ;     MOV DL,AH
-    ;     MOV AH, 02h
-    ;     INT 21h
-        
-    ;     POP DX
-    ;     MOV AH, 02h
-    ;     INT 21h
      HEX_TO_DEC:
                 XOR BX, BX
-                 XOR AX, AX
+                XOR AX, AX
                 MOV     CL, 10
-         MOV AL, misplaced_letters_count
+                MOV AL, misplaced_letters_count
                 LOOP1:
 
                 DIV CL
@@ -151,7 +135,7 @@ start:
                 MOV DL, DH
                 ADD DL, '0'
                 MOV AH, 02h
-        INT 21h
+                INT 21h
                 dec bx
                 jnz LOOP2
        
