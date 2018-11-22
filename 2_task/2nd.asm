@@ -31,9 +31,14 @@ Open_file:
     lea dx, txt_file
     int 21h
     jc reading_error
+    
     mov data_descr, ax
-    jmp count_numbers
-
+    jmp SCREWING_THROUGH_BUFFER
+reading_error:
+    mov ah, 09h
+    mov dl, error_message
+    int 21h
+    jmp exit
 reading_from_buffer:
     mov ah, 3Fh
     mov bx, data_descr
@@ -49,7 +54,7 @@ reading_from_buffer:
 
 SCREWING_THROUGH_BUFFER:
         lea bx, read_buffer
-        mov si, bx
+        
         mov cx, buffer_number
         checking1:
             cmp cx, 0
@@ -108,16 +113,15 @@ SCREWING_THROUGH_BUFFER:
 
 
 
-reading_error:
-    mov ah, 09h
-    mov dl, error_message
+
+
+
+close_file:
+    xor cx, cx
+    mov cl, dcase_letter
+    mov ah, 3Eh
     int 21h
     jmp exit
-
-
-Printing_letters:
-
-
 
 
 
@@ -162,7 +166,9 @@ end start
                 MOV DL, DH
                 ADD DL, '0'
                 MOV AH, 02h
-        INT 21h
+                INT 21h
                 dec bx
                 jnz LOOP2
+
+
 
