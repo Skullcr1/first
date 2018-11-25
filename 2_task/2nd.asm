@@ -11,10 +11,10 @@
   error_message db "error$"
   help_msg db" error $"
   ;*************************
-  symbol_number db ?
-  word_number db ?
-  lcase_letter db ?
-  dcase_letter db ?    
+  symbol_number db 0h
+  word_number db 0h
+  lcase_letter db 0h
+  dcase_letter db 0h    
 
   ;we will put our result in variables
 
@@ -87,14 +87,15 @@ SCREWING_THROUGH_BUFFER:
         
         lea si, read_buffer   
         jmp lol
-        lol1:
-        ; inc si  
+      
         lol:
         mov bx, [si]
     
      
         checking1:
             cmp cx, 0
+            je reading_from_buffer
+            cmp bl, 0
             je reading_from_buffer
         checking:  
             cmp bl, 20h
@@ -150,7 +151,7 @@ SCREWING_THROUGH_BUFFER:
             inc symbol_number
              mov bl,bh
              inc si
-            jmp lol1
+            jmp lol
 
 
 
@@ -159,7 +160,7 @@ SCREWING_THROUGH_BUFFER:
 
 close_file:
     xor cx, cx
-    mov cl, lcase_letter
+    mov cl, symbol_number
     mov ah, 3Eh
     int 21h
     jmp exit
