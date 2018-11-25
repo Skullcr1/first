@@ -10,6 +10,9 @@
   buffer_number dw 0
   error_message db "error$"
   help_msg db" error $"
+  lcase db "Lcase letter:$"
+  dcase db "dcase letter:$"
+
   ;*************************
   symbol_number db 0h
   word_number db 0h
@@ -86,16 +89,17 @@ SCREWING_THROUGH_BUFFER:
         ; mov bx, dx
         
         lea si, read_buffer   
-        jmp lol
+        
       
         lol:
         mov bx, [si]
     
-     
         checking1:
-            cmp cx, 0
+            cmp cx, 0h
             je reading_from_buffer
-            cmp bl, 0
+            cmp bl, 0h
+            inc word_number
+            cmp bl, 0h
             je reading_from_buffer
         checking:  
             cmp bl, 20h
@@ -110,37 +114,37 @@ SCREWING_THROUGH_BUFFER:
         space:
             cmp cx, buffer_number
             je st_space
-            inc si
             cmp bl, 20h
-            ja word_count
-
-        word_count:
+          word_count:
             inc word_number         
             inc si
             dec cx
-            jmp checking1
+            jmp lol
+        
 
         st_space:
             dec buffer_number
             ; inc si
             dec cx
-            jmp checking1
+
+            jmp lol
 
         not_letter:
-            inc si 
+            
             dec cx
             inc symbol_number
-            jmp checking1
+            inc si 
+            jmp lol
 
         big_letter:
             cmp bl, 5Ah
             ja not_letter
             inc dcase_letter
-            inc si
             dec cx
             inc symbol_number
             mov bl,bh
-            jmp checking1
+            inc si
+            jmp lol
 
         small_letter:
             cmp bl, 7Ah
@@ -160,9 +164,70 @@ SCREWING_THROUGH_BUFFER:
 
 close_file:
     xor cx, cx
-    mov cl, symbol_number
+    mov cl, word_number
     mov ah, 3Eh
     int 21h
+
+    mov ah, 9   
+	mov dx, offset Lcase
+	int 21h
+
+      HEX_TO_DEC1:
+                XOR BX, BX
+                XOR AX, AX
+                MOV     CL, 10
+                MOV AL, lcase_letter
+                LOOP12:
+                
+
+                DIV CL
+                inc BX
+                PUSH AX
+                XOR AH, AH
+
+                TEST al, al
+                jnz LOOP12
+
+                LOOP21:
+                POP DX
+                MOV DL, DH
+                ADD DL, '0'
+                MOV AH, 02h
+                INT 21h
+                dec bx
+                jnz LOOP21
+
+    mov ah, 9   
+	mov dx, offset dcase
+	int 21h
+
+     HEX_TO_DEC:
+                XOR BX, BX
+                XOR AX, AX
+                MOV     CL, 10
+                MOV AL, dcase_letter
+                LOOP1:
+               
+
+                DIV CL
+                inc BX
+                PUSH AX
+                XOR AH, AH
+
+                TEST al, al
+                jnz LOOP1
+
+                LOOP2:
+                POP DX
+                MOV DL, DH
+                ADD DL, '0'
+                MOV AH, 02h
+                INT 21h
+                dec bx
+                jnz LOOP2
+
+
+
     jmp exit
 
 
