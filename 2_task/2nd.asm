@@ -3,13 +3,13 @@
 
 .data
   txt_file db "data.txt", 0
-  
+  Open_file1 db 128 dup (0) 
   read_buffer db 10 dup (?)
   text_length DB ?
   data_descr dw ?
   buffer_number dw 0
   error_message db "error$"
-
+  help_msg db" error $"
   ;*************************
   symbol_number db ?
   word_number db ?
@@ -25,6 +25,32 @@
 start:
 mov ax, @data
 mov ds, ax
+
+mov bx, 82h
+mov si, offset Open_file1
+cmp byte ptr es:[80h], 0
+je help
+cmp es:[82h], '?/'
+jne check_parametrs
+cmp byte ptr es:[84h], 13
+je help
+jmp check_parametrs
+
+help:
+mov ah, 9
+	mov dx, offset help_msg
+	int 21h
+	jmp exit
+
+    check_parametrs:
+	cmp byte ptr es:[bx], 13 
+	je Open_file
+    mov dl, byte ptr es:[bx]
+	mov [si], dl
+	inc bx
+	inc si
+	jmp check_parametrs
+
 
 Open_file:
     mov ah, 3Dh
@@ -56,29 +82,35 @@ reading_from_buffer:
     jmp close_file
 
 SCREWING_THROUGH_BUFFER:
-        xor bx, bx
+        ; xor bx, bx
         ; mov bx, dx
-        lea si, read_buffer
+        
+        lea si, read_buffer   
+        jmp lol
+        lol1:
+        ; inc si  
+        lol:
         mov bx, [si]
-        mov cx, buffer_number
+    
+     
         checking1:
             cmp cx, 0
             je reading_from_buffer
         checking:  
-            cmp bx, 20h
+            cmp bl, 20h
             je space
-            cmp bx, 61h
+            cmp bl, 61h
             jae small_letter
-            cmp bx, 41h
+            cmp bl, 41h
             jae big_letter
-            cmp bx, 20h
+            cmp bl, 20h
             ja not_letter
        
         space:
             cmp cx, buffer_number
             je st_space
             inc si
-            cmp bx, 20h
+            cmp bl, 20h
             ja word_count
 
         word_count:
@@ -89,7 +121,7 @@ SCREWING_THROUGH_BUFFER:
 
         st_space:
             dec buffer_number
-            inc si
+            ; inc si
             dec cx
             jmp checking1
 
@@ -100,22 +132,25 @@ SCREWING_THROUGH_BUFFER:
             jmp checking1
 
         big_letter:
-            cmp si, 5Ah
+            cmp bl, 5Ah
             ja not_letter
             inc dcase_letter
-            inc bx
-            dec cx
-            inc symbol_number
-            jmp checking1
-
-        small_letter:
-            cmp bx, 7Ah
-            jae not_letter
-            inc lcase_letter
             inc si
             dec cx
             inc symbol_number
+            mov bl,bh
             jmp checking1
+
+        small_letter:
+            cmp bl, 7Ah
+            jae not_letter
+            inc lcase_letter
+            ; inc si
+            dec cx
+            inc symbol_number
+             mov bl,bh
+             inc si
+            jmp lol1
 
 
 
