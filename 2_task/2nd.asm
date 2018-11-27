@@ -30,10 +30,9 @@
 start:
     mov ax, @data
     mov ds, ax
-
     mov bx, 82h
     mov si, offset Open_file1
-    cmp byte ptr es:[80h], 0
+    cmp byte ptr es:[80h], 0h
     je help
     cmp es:[82h], '?/'
     jne check_parametrs
@@ -67,7 +66,8 @@ Open_file:
     lea dx, Open_file1
     int 21h
     jc reading_error
-    
+    mov bx, 00h ;initial push
+    push bx
     mov data_descr, ax
     jmp reading_from_buffer
 reading_error:
@@ -81,31 +81,42 @@ reading_from_buffer:
     mov cx, 10
     lea dx, read_buffer
     int 21h
-    push bx
+    
+    ;push bx
     jc reading_error
     mov buffer_number, ax 
     cmp buffer_number, 0
     ja SCREWING_THROUGH_BUFFER
-    pop bx
+    ; pop bx
     jmp close_file
 
 SCREWING_THROUGH_BUFFER:
-        ; xor bx, bx
+        xor bx, bx
         ; mov bx, dx
-       
+       mov bx, ax
         lea si, read_buffer   
-        xor cx, cx
+      
         mov cx, ax
 
-      
+        pop bx
+        mov ah, bl
+
         lol:
-        mov bx, [si]
-    
-        checking1:
+        
+        
+        
+
+    ;rename
+        
             cmp cx, 0h
-            je reading_from_buffer 
-            ; cmp cx, 1h
-            ; je CHECK_IF_WORD
+            jne continue_checking
+            
+            push bx
+            jmp reading_from_buffer 
+        
+
+continue_checking:
+            mov bx, [si]
             cmp bl, 0h
             je reading_from_buffer
         checking:  
@@ -121,7 +132,10 @@ SCREWING_THROUGH_BUFFER:
             jae big_letter
             cmp bl, 41h
             jb symbol_count
-       
+       check_previous_Value:
+            cmp ah, 20h
+            ja word_count
+
         ; space1:
         ;     cmp ax, cx
         ;     je space2
@@ -138,7 +152,7 @@ SCREWING_THROUGH_BUFFER:
 
 
          subber:
-            mov bl, bh
+            ;mov bl, bh
             inc si
             dec cx
             jmp lol
@@ -152,17 +166,17 @@ SCREWING_THROUGH_BUFFER:
         word_count:
             
             inc word_number     
-            mov bl,bh    
+           ; mov bl,bh    
             inc si
             dec cx
             jmp lol
         
-        not_letter:  
-            dec cx
-            inc symbol_number
-            mov bl,bh
-            inc si
-            jmp lol
+        ; not_letter:  
+        ;     dec cx
+        ;     inc symbol_number
+        ;     ;mov bl,bh
+        ;     inc si
+        ;     jmp lol
 
         ; big_letter: ;/* check */
         ;     cmp bl, 5Ah
@@ -178,13 +192,13 @@ SCREWING_THROUGH_BUFFER:
             cmp bl, 7Ah
             ja symbol_count
             inc lcase_letter
-            inc symbol_number
+            inc symbol_number ; is small letter a symbol?
             cmp bh, 20h
             jbe word_count
-            mov bl, bh
-            inc si
-            dec cx
-            jmp lol
+            cmp cx, 01
+            je check_if_last_word
+
+            jmp subber
         
         big_letter:   
             cmp bl, 5Ah
@@ -192,11 +206,11 @@ SCREWING_THROUGH_BUFFER:
             inc dcase_letter
             inc symbol_number
             cmp bh, 20h
-            je word_count
-            mov bl, bh
-            inc si
-            dec cx
-            jmp lol
+            jbe word_count
+            cmp cx, 01
+            je check_if_last_word
+            
+            jmp subber
 
         symbol_count:
             cmp bl, 7Fh
@@ -209,22 +223,17 @@ SCREWING_THROUGH_BUFFER:
         symbol_add:
             inc symbol_number
             cmp bh, 20h
-            je word_count
-            inc si
-            dec cx
-            jmp lol
+            jbe word_count
+           
+            cmp cx, 01h
+            je check_if_last_word
 
-        ; small_letter: ;check
-        ;     cmp bl, 7Ah
-        ;     jae not_letter
-        ;     inc lcase_letter
-        ;     ; inc si
-        ;     dec cx
-        ;     inc symbol_number
-        ;     mov bl,bh
-        ;     inc si
-        ;     jmp lol
+            jmp subber
 
+        check_if_last_word:
+            cmp al, 10
+            jne word_count
+            jmp subber
 
 close_file:
             xor cx, cx
@@ -303,6 +312,7 @@ exit:
 
 RET
 endp HEX_TO_DEC
+
 end start
 
 Proc HEX_TO_DEC
