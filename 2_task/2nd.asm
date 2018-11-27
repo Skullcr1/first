@@ -8,10 +8,12 @@
   text_length DB ?
   data_descr dw ?
   buffer_number dw 0
-  error_message db "error$"
-  help_msg db" error $"
-  lcase db "Lcase letter:$"
-  dcase db "dcase letter:$"
+  error_message db "Error occured. try again$"
+  name_msg db "Korneliusz Tomasz Maksimowicz, PS 5 grupe$"
+  lcase db "Lcase letter: $"
+  dcase db "dcase letter: $"
+  wcase db "word number: $"
+  scase db "symbol number: $"
     ;   print_number db 10 dup (24h)
   ;*************************
   symbol_number dw 0h
@@ -36,12 +38,16 @@ start:
     cmp es:[82h], '?/'
     jne check_parametrs
     cmp byte ptr es:[84h], 13
-    je help
+    je name1
     jmp check_parametrs
-
+name1:
+    mov ah, 9
+	mov dx, offset name_msg
+	int 21h
+	jmp exit
 help:
     mov ah, 9
-	mov dx, offset help_msg
+	mov dx, offset error_message
 	int 21h
 	jmp exit
 
@@ -77,8 +83,7 @@ reading_from_buffer:
     int 21h
     push bx
     jc reading_error
-    mov buffer_number, ax
-    
+    mov buffer_number, ax 
     cmp buffer_number, 0
     ja SCREWING_THROUGH_BUFFER
     pop bx
@@ -87,7 +92,7 @@ reading_from_buffer:
 SCREWING_THROUGH_BUFFER:
         ; xor bx, bx
         ; mov bx, dx
-        
+       
         lea si, read_buffer   
         xor cx, cx
         mov cx, ax
@@ -99,86 +104,241 @@ SCREWING_THROUGH_BUFFER:
         checking1:
             cmp cx, 0h
             je reading_from_buffer 
+            ; cmp cx, 1h
+            ; je CHECK_IF_WORD
             cmp bl, 0h
             je reading_from_buffer
         checking:  
+            cmp bl, 0Dh
+            je subber
+            cmp bl, 0Ah
+            je subber
             cmp bl, 20h
-            je space
+            je subber
             cmp bl, 61h
             jae small_letter
             cmp bl, 41h
             jae big_letter
-            cmp bl, 20h
-            ja not_letter
+            cmp bl, 41h
+            jb symbol_count
        
-        space:
-            cmp bh, 20h
-            je st_space
+        ; space1:
+        ;     cmp ax, cx
+        ;     je space2
+        ;     cmp bh, 20h
+        ;     ja word_count
+        ;     jmp subber
+        ; spacex:      
+        ;     cmp cx, 0Ah  
+        ;     je subber
+        ;     jmp space2
+        ; space2:    
+        ;     cmp bh, 20h
+        ;     je subber
+
+
+         subber:
+            mov bl, bh
+            inc si
+            dec cx
+            jmp lol
+
+        ;  st_space:
+        ;     mov bl, bh
+        ;     inc si
+        ;     dec cx
+        ;     jmp lol
+
+        word_count:
             
-          word_count:
             inc word_number     
             mov bl,bh    
             inc si
             dec cx
             jmp lol
         
-
-        st_space:
-            
-            dec cx
-            mov bl,bh
-            inc si
-            jmp lol
-
-        not_letter:
-            
+        not_letter:  
             dec cx
             inc symbol_number
             mov bl,bh
             inc si
             jmp lol
 
-        big_letter: ;/* check */
-            cmp bl, 5Ah
-            ja not_letter
-            inc dcase_letter
-            dec cx
-            inc symbol_number
-            mov bl,bh
-            inc si
-            jmp lol
+        ; big_letter: ;/* check */
+        ;     cmp bl, 5Ah
+        ;     ja not_letter
+        ;     inc dcase_letter
+        ;     dec cx
+        ;     inc symbol_number
+        ;     mov bl,bh
+        ;     inc si
+        ;     jmp lol
 
-        small_letter: ;check
+        small_letter:
             cmp bl, 7Ah
-            jae not_letter
+            ja symbol_count
             inc lcase_letter
-            ; inc si
-            dec cx
             inc symbol_number
-            mov bl,bh
+            cmp bh, 20h
+            jbe word_count
+            mov bl, bh
             inc si
+            dec cx
+            jmp lol
+        
+        big_letter:   
+            cmp bl, 5Ah
+            ja symbol_count
+            inc dcase_letter
+            inc symbol_number
+            cmp bh, 20h
+            je word_count
+            mov bl, bh
+            inc si
+            dec cx
             jmp lol
 
+        symbol_count:
+            cmp bl, 7Fh
+            jb symbol_add
+            cmp bl, 61h
+            jb symbol_add
+            cmp bl, 20h
+            ja symbol_add
+            jmp subber
+        symbol_add:
+            inc symbol_number
+            cmp bh, 20h
+            je word_count
+            inc si
+            dec cx
+            jmp lol
+
+        ; small_letter: ;check
+        ;     cmp bl, 7Ah
+        ;     jae not_letter
+        ;     inc lcase_letter
+        ;     ; inc si
+        ;     dec cx
+        ;     inc symbol_number
+        ;     mov bl,bh
+        ;     inc si
+        ;     jmp lol
 
 
-
-
-
-        close_file:
+close_file:
             xor cx, cx
-            
             mov ah, 3Eh
             int 21h
 
     mov ah, 9   
-	mov dx, offset Lcase
+	mov dx, offset wcase
 	int 21h
+    mov ax, word_number
+    call HEX_TO_DEC
 
-HEX_TO_DEC:
+    mov ah, 9   
+	mov dx, offset lcase
+	int 21h
+    mov ax, lcase_letter
+    call HEX_TO_DEC
+
+     mov ah, 9   
+	mov dx, offset dcase
+	int 21h
+    mov ax, dcase_letter
+    call HEX_TO_DEC
+
+     mov ah, 9   
+	mov dx, offset scase
+	int 21h
+    mov ax, symbol_number
+    call HEX_TO_DEC
+    
+
+
+
+    
+
+
+
+
+
+    jmp exit
+
+
+
+
+
+exit:
+    mov ah, 4ch
+    mov al, 0
+    int 21h
+
+    Proc HEX_TO_DEC
+
     xor dx, dx
     xor cx, cx
     xor bx, bx
-    mov ax, lcase_letter
+    mov cx, 10
+
+    divide:
+    div cx
+    push dx
+    xor dx, dx
+    inc bx
+    test ah, ah
+    jz check_al
+    check_al:
+    test al, al
+    jz print_number
+    jmp divide
+    print_number:
+    pop dx
+    add dl, 30h
+    mov ah, 02h
+    int 21h
+    dec bx
+    jnz print_number
+
+RET
+endp HEX_TO_DEC
+end start
+
+Proc HEX_TO_DEC
+
+    xor dx, dx
+    xor cx, cx
+    xor bx, bx
+    mov cx, 10
+
+    divide:
+    div cx
+    push dx
+    xor dx, dx
+    inc bx
+    test ah, ah
+    jz check_al
+    check_al:
+    test al, al
+    jz print_number
+    jmp divide
+    print_number:
+    pop dx
+    add dl, 30h
+    mov ah, 02h
+    int 21h
+    dec bx
+    jnz print_number
+
+RET
+endp HEX_TO_DEC
+
+STUFF:  HEX_TO_DEC:
+    xor dx, dx
+    xor cx, cx
+    xor bx, bx
+    mov ax, word_number
     mov cx, 10
 
     divide:
@@ -201,22 +361,6 @@ HEX_TO_DEC:
     jnz print_number
     jmp exit
 
-
-
-
-
-    jmp exit
-
-
-
-
-
-exit:
-    mov ah, 4ch
-    mov al, 0
-    int 21h
-end start
-STUFF:  
     ; PROC Count_symbols
     ;     push ax
     ;     push bx
