@@ -14,13 +14,15 @@
   dcase db "dcase letter: $"
   wcase db "word number: $"
   scase db "symbol number: $"
+  new_line db 13,10,24h 
     ;   print_number db 10 dup (24h)
   ;*************************
   symbol_number dw 0h
   word_number dw 0h
   lower_case dw 0h
   upper_case dw 0h    
-
+  parameter_index dw 82h
+  is_it_last_parameter dw 0h ;use bool
   ;we will put our result in variables
 
 
@@ -30,7 +32,7 @@
 start:
     mov ax, @data
     mov ds, ax
-    mov bx, 82h
+    mov bx, parameter_index
     mov si, offset Open_file1
     cmp byte ptr es:[80h], 0h
     je help
@@ -52,6 +54,8 @@ help:
 
 check_parametrs:
 	cmp byte ptr es:[bx], 0dh 
+	je Open_last_file
+    cmp byte ptr es:[bx], 20h 
 	je Open_file
     mov dl, byte ptr es:[bx]
 	mov [si], dl
@@ -59,8 +63,11 @@ check_parametrs:
 	inc si
 	jmp check_parametrs
 
-
+Open_last_file:
+    mov is_it_last_parameter, 01h
 Open_file:
+    inc bx
+    mov parameter_index, bx
     mov ah, 3Dh
     mov al, 0h
     lea dx, Open_file1
@@ -102,7 +109,12 @@ ITERATE_BUFFER:
             jne check_char_ranges
             push bx     ;save last value to stack
             jmp reading_from_buffer 
-        
+start_near:
+mov word_number,0h
+mov lower_case,0h
+mov upper_case, 0h  
+mov symbol_number, 0h
+jmp start        
 
 check_char_ranges:
             mov bx, [si]
@@ -145,7 +157,8 @@ check_char_ranges:
             cmp cx, 01
             je check_if_last_word
             jmp increase_counter
-        
+start_further:
+jmp start_near       
         big_letter:   
             cmp bl, 5Ah
             ja symbol_count
@@ -179,7 +192,8 @@ check_char_ranges:
             cmp al, 10
             jne word_count
             jmp increase_counter
-
+start_far:
+jmp start_further
 close_file:
             xor cx, cx
             mov ah, 3Eh
@@ -208,13 +222,19 @@ close_file:
 	int 21h
     mov ax, symbol_number
     call HEX_TO_DEC
+    mov ah,9
+    mov dx, offset new_line
+    int 21h
 
+    cmp is_it_last_parameter, 01h
+    jne start_far
     jmp exit
 
 exit:
     mov ah, 4ch
     mov al, 0
     int 21h
+
 
     Proc HEX_TO_DEC
 
@@ -241,6 +261,7 @@ exit:
     int 21h
     dec bx
     jnz print_number
+
 
 RET
 endp HEX_TO_DEC
