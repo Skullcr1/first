@@ -23,9 +23,9 @@
   upper_case dw 0h    
   parameter_index dw 82h
   is_it_last_parameter dw 0h ;use bool
+  push_pop db 0h
   ;we will put our result in variables
-  last_char db 0h
-  previous_buffer dw 0h
+
 
 .code
 
@@ -75,7 +75,7 @@ Open_file:
     int 21h
     jc reading_error
     mov bx, 00h ;initial push
-    mov last_char, 0h
+    push bx
     mov data_descr, ax
     jmp reading_from_buffer
 reading_error:
@@ -89,64 +89,56 @@ reading_from_buffer:
     mov cx, 10
     lea dx, read_buffer
     int 21h
+    
+    jc reading_error
     mov buffer_number, ax 
     cmp buffer_number, 0h
-    je check_last_symbol
-    jc reading_error
+    je add_di
+    add_di:
+    inc di
+    mov ah, bl
+    cmp ah, 20h
+    jmp 
+
+
+
+    mov buffer_number, ax 
     cmp buffer_number, 0h
     ja ITERATE_BUFFER
     jmp close_file
-check_last_symbol:
-cmp previous_buffer, 0Ah
-jne close_file1
-cmp last_char, 20h
-ja word_add
-jmp close_file
 
-word_add:
-inc word_number
-jmp close_file
-reading_from_buffer1:
-jmp reading_from_buffer
 ITERATE_BUFFER:
+        inc di
         xor bx, bx
         mov bx, ax
         lea si, read_buffer   
-       
+      
         mov cx, ax      ;amount of characters 
-         mov previous_buffer, ax
-        mov last_char, bl         ;last value from previous buffer
+        pop bx          ;last value from previous buffer
         mov ah, bl      ;saving last value in ah
 
         check_if_iterate_finished:  
             cmp cx, 0h
+            je lower_di
+            cmp cx, 0h
             jne check_char_ranges
-            mov last_char,bl     ;save last value to stack
+            push bx     ;save last value to stack
             jmp reading_from_buffer 
-        ; if_last_space:
-        ;     cmp bl, 20h
-        ;     je last_space
-        ;     jmp not_space
-            close_file1:
-            jmp close_file
-last_space:
-    cmp last_char, 20h
-    jg word_add
-    jmp not_space
+            lower_di:
+            dec di 
+            push bx
+            jmp reading_from_buffer
 start_near:
-    mov word_number,0h
-    mov lower_case,0h
-    mov upper_case, 0h  
-    mov symbol_number, 0h
-    jmp start        
+mov word_number,0h
+mov lower_case,0h
+mov upper_case, 0h  
+mov symbol_number, 0h
+jmp start        
 
 check_char_ranges:
             mov bx, [si]
-    ; cmp last_char, bl
-    ; jmp if_last_space
-    not_space:
             cmp bl, 0h
-            je reading_from_buffer1
+            je reading_from_buffer
             cmp bl, 0Dh
             je increase_counter
             cmp bl, 0Ah
@@ -161,7 +153,7 @@ check_char_ranges:
             jb symbol_count
        check_previous_Value:
             cmp ah, 20h
-            ja word_count  
+            ja word_count
 
          increase_counter: 
             inc si
@@ -186,8 +178,6 @@ check_char_ranges:
             cmp cx, 01
             je check_if_last_word
             jmp increase_counter
-            close_file2:
-            jmp close_file
 start_further:
 jmp start_near       
          big_letter:   
