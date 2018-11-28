@@ -152,6 +152,8 @@ check_char_ranges:
             ja symbol_count
             inc lower_case
             inc symbol_number ; is small letter a symbol?
+            cmp cx, 01
+            je check_if_last_word
             cmp bh, 20h
             jbe word_count
             cmp cx, 01
@@ -159,11 +161,13 @@ check_char_ranges:
             jmp increase_counter
 start_further:
 jmp start_near       
-        big_letter:   
+         big_letter:   
             cmp bl, 5Ah
             ja symbol_count
             inc upper_case
             inc symbol_number
+            cmp cx, 01
+            je check_if_last_word
             cmp bh, 20h
             jbe word_count
             cmp cx, 01
