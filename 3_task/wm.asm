@@ -87,7 +87,7 @@
 	komanda_IDIV db "IDIV $"
 	komanda_IRET db "IRET $"
     komanda_XCHG_AXAX db "XCHG ax, ax$"
-    komanda_XCHG_BXAX db "XCHG ax, ax$"
+    komanda_XCHG_BXAX db "XCHG bx, ax$"
     komanda_XCHG_DXAX db "XCHG dx, ax$"  
     komanda_XCHG_CXAX db "XCHG cx, ax$"
 	komanda_INal db "IN al, $"
@@ -115,6 +115,35 @@
 	enteris db 13,10,"$"
 	kablelis_tarpas db ", $"
 	
+komanda_tai_xchg_al_al db "xchg al, al$"
+komanda_tai_xchg_al_ah db "xchg al, ah$"
+komanda_tai_xchg_al_bh db "xchg al, bh$"
+komanda_tai_xchg_al_cl db "xchg al, ch$"
+komanda_tai_xchg_al_dl db "xchg al, dl$"
+komanda_tai_xchg_al_dh db "xchg al, dh$"
+komanda_tai_xchg_ah_dl db "xchg ah, dl$"
+komanda_tai_xchg_bl_dl db "xchg ah, bl$"
+komanda_tai_xchg_dh_dh db "xchg dh, dh$"
+komanda_tai_xchg_cl_dl db "xchg cl, dl$"
+komanda_tai_xchg_dl_ch db "xchg dl, ch$"
+komanda_tai_xchg_bh_dl db "xchg bh, dl$"
+komanda_tai_xchg_ah_bh db "xchg ah, bh$"
+komanda_tai_xchg_ch_dh db "xchg ch, dh$"
+komanda_tai_xchg_dh_al db "xchg dh, al$"
+komanda_tai_xchg_dh_bl db "xchg ah, bl$"
+komanda_tai_xchg_bh_ah db "xchg bh, ah$"
+komanda_tai_xchg_bh_cl db "xchg bh, cl$"
+komanda_tai_xchg_cl_bl db "xchg cl, bl$"
+komanda_tai_xchg_cl_ah db "xchg cl, ah$"
+
+
+
+
+
+
+
+
+
 	komandos_pradzia dw 0
 	komandos_ilgis db ?
 	baitu_skaicius dw 0
@@ -336,8 +365,7 @@ neskaitom_adr:
 	je betarpiskas1
 	cmp komandos_pav, offset komanda_INaldx
 	je betarpiskas1
-	cmp komandos_pav, offset komanda_XCHG_AXAX
-	je betarpiskas1
+
     cmp komandos_pav, offset komanda_XCHG_BXAX
 	je betarpiskas1
     cmp komandos_pav, offset komanda_XCHG_CXAX
@@ -499,6 +527,10 @@ RET
 ;-----------------------------------------------------------------------------------------------------------------------
 ;-----------------------------------------------------------------------------------------------------------------------
 kokia_komanda:
+	cmp al, 86h ; xchg jeigu 8bitu
+	je tai_xchg_8bit_relative
+	; cmp al, 87h ; jeigu 16bitu
+	; je tai_xchg_16bit
 	cmp al, 11001111b	;IRET
 	je tai_IRET
 	cmp al, 11001101b	;INT sekantis baitas tai numeris
@@ -525,8 +557,8 @@ kokia_komanda:
 	je tai_TEST_relative ;test with reg?
 	cmp pag, 10101000b
 	je tai_TEST2_relative ; works
-	cmp pag, 10000110b	;XCHG reg r/m
-	je tai_XCHG_relative
+	; cmp pag, 10000110b	;XCHG reg r/m
+	; je tai_XCHG_relative
 	cmp pag, 11110110b	;DIV arba DIV
 	je tai_DIV_IDIV_TEST_relative
 	
@@ -536,6 +568,8 @@ kokia_komanda:
 	; cmp al, 10010000b
 	; je tai_XCHG2_relative
 	jmp komanda_neatpazinta
+	tai_xchg_8bit_relative:
+	jmp tai_xchg_8bit
     tai_XCHG_AXAX_relative:
     jmp tai_XCHG_AXAX
     tai_XCHG_BXAX_relative:
@@ -556,8 +590,8 @@ kokia_komanda:
 	jmp tai_TEST
 	tai_TEST2_relative:
 	jmp tai_TEST2
-	tai_XCHG_relative:
-	jmp tai_XCHG
+	; tai_XCHG_relative:
+	; jmp tai_XCH1G
 	tai_DIV_IDIV_TEST_relative:
 	jmp tai_DIV_IDIV_TEST 
 	; tai_XCHG2_relative:
@@ -673,21 +707,15 @@ tai_TEST2:
 	jmp kokia_komanda_pab
 	kokia_komanda_pab_relative:
 	jmp kokia_komanda_pab
-tai_XCHG:
+tai_xchg_8bit:
 	mov apleidziam, 1h
 	mov nera_adr, 0h
-	mov dBitas, 1h
-	mov du_operandai, 1h
 	mov komandos_pav, 0
-	mov komandos_pav, offset komanda_XCHG
-	mov komandos_pav_ilgis, 5
-	call kitas_baitas
-	call skaidyk_adr_baita
-	cmp modas, 11b
-	je kokia_komanda_pab_relative_2
-	mov modas, 0011b
-	mov broken, 1h
-	add komandos_ilgis, 2
+	mov dBitas, 1h
+	mov du_operandai, 0h
+	call kitas_baitas ;gauname adresacijos baita
+	
+	call gauti_komandos_varda_xchg_8bit
 	jmp kokia_komanda_pab
 ; tai_XCHG2:
 ; 	mov xchg2, 1h
@@ -767,6 +795,141 @@ tai_TEST3:
 	gauti_komandos_varda_pab:
 RET
 
+
+gauti_komandos_varda_xchg_8bit:
+	mov komandos_pav, 0
+	cmp al, 0FAh
+	je tai_xchg_al_al
+	; cmp al, C4h
+	; je tai_xchg_al_ah
+	; cmp al, C7h
+	; je tai_xchg_al_bh
+	; cmp al, C1h
+	; je tai_xchg_al_cl
+	; cmp al, C2h
+	; je tai_xchg_al_dl
+	; cmp al, C6h
+	; je tai_xchg_al_dh
+	; cmp al, E2h
+	; je tai_xchg_ah_dl
+	; cmp al, E7h
+	; je tai_xchg_ah_bh
+	; cmp al, DAh
+	; je tai_xchg_bl_dl
+	; cmp al, F6h
+	; je tai_xchg_dh_dh
+	; cmp al, CAh
+	; je tai_xchg_cl_dl
+	; cmp al, D5h
+	; je tai_xchg_dl_ch
+	; cmp al, FAh
+	; je tai_xchg_bh_dl
+	; cmp al, E7h
+	; je tai_xchg_ah_bh
+	; cmp al, EEh
+	; je tai_xchg_ch_dh
+	; cmp al, F0h
+	; je tai_xchg_dh_al
+	; cmp al, F3h
+	; je tai_xchg_dh_bl
+	; cmp al, FCh
+	; je tai_xchg_bh_ah
+	; cmp al, F9h
+	; je tai_xchg_bh_cl
+	; cmp al, CBh
+	; je tai_xchg_cl_bl
+	; cmp al, F3h
+	; je tai_xchg_cl_ah
+
+tai_xchg_al_al: 
+	mov komandos_pav, offset komanda_tai_xchg_al_al
+	mov komandos_pav_ilgis, 11
+	jmp gauti_komandos_varda_pab_1
+; tai_xchg_al_ah: 
+; 	mov komandos_pav, offset komanda_tai_xchg_al_ah
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_al_bh: 
+; 	mov komandos_pav, offset komanda_tai_xchg_al_bh
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_al_cl: 
+; 	mov komandos_pav, offset komanda_tai_xchg_al_cl
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_al_dl: 
+; 	mov komandos_pav, offset komanda_tai_xchg_al_dl
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_al_dh: 
+; 	mov komandos_pav, offset komanda_tai_xchg_al_dh
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_ah_dl: 
+; 	mov komandos_pav, offset komanda_tai_xchg_ah_dl
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_bl_dl: 
+; 	mov komandos_pav, offset komanda_tai_xchg_bl_dl
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_dh_dh: 
+; 	mov komandos_pav, offset komanda_tai_xchg_dh_dh
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_cl_dl: 
+; 	mov komandos_pav, offset komanda_tai_xchg_cl_dl
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_dl_ch: 
+; 	mov komandos_pav, offset komanda_tai_xchg_dl_ch
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_bh_dl: 
+; 	mov komandos_pav, offset komanda_tai_xchg_bh_dl
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_ah_bh: 
+; 	mov komandos_pav, offset komanda_tai_xchg_ah_bh
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_ch_dh: 
+; 	mov komandos_pav, offset komanda_tai_xchg_ch_dh
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_dh_al: 
+; 	mov komandos_pav, offset komanda_tai_xchg_dh_al
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_dh_bl: 
+; 	mov komandos_pav, offset komanda_tai_xchg_dh_bl
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_bh_ah: 
+; 	mov komandos_pav, offset komanda_tai_xchg_bh_ah
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_bh_cl: 
+; 	mov komandos_pav, offset komanda_tai_xchg_bh_cl
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_cl_bl: 
+; 	mov komandos_pav, offset komanda_tai_xchg_cl_bl
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+; tai_xchg_cl_ah: 
+; 	mov komandos_pav, offset komanda_tai_xchg_cl_ah
+; 	mov komandos_pav_ilgis, 11
+; 	jmp gauti_komandos_varda_pab_1	
+
+
+
+
+
+
+
+	gauti_komandos_varda_pab_1:
+RET
 ; gauti_komandos_varda_TEST:
 ; 	mov komandos_pav, 0
 ; 	cmp regas, 000b
