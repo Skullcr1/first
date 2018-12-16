@@ -86,10 +86,10 @@
 	komanda_DIV db "DIV $"
 	komanda_IDIV db "IDIV $"
 	komanda_IRET db "IRET $"
-    komanda_XCHG_AXAX db "XCHG ax, ax$"
-    komanda_XCHG_BXAX db "XCHG ax, ax$"
-    komanda_XCHG_DXAX db "XCHG dx, ax$"  
-    komanda_XCHG_CXAX db "XCHG cx, ax$"
+    komanda_XCHG_AXAX db "XCHG AX,AX $"
+    komanda_XCHG_BXAX db "XCHG BX,AX $"
+    komanda_XCHG_DXAX db "XCHG DX,AX $"  
+    komanda_XCHG_CXAX db "XCHG CX,AX $"
 	komanda_INal db "IN al, $"
 	komanda_INax db "IN ax, $"
 	komanda_INaldx db "IN al, dx$"
@@ -331,21 +331,13 @@ neskaitom_adr:
 	cmp komandos_pav, offset komanda_IDIV
 	je betarpiskas1
 	cmp komandos_pav, offset komanda_nera
-	je betarpiskas1
+	je betarpiskas
 	cmp komandos_pav, offset komanda_INaxdx
-	je betarpiskas1
+	je betarpiskas
 	cmp komandos_pav, offset komanda_INaldx
-	je betarpiskas1
-	cmp komandos_pav, offset komanda_XCHG_AXAX
-	je betarpiskas1
-    cmp komandos_pav, offset komanda_XCHG_BXAX
-	je betarpiskas1
-    cmp komandos_pav, offset komanda_XCHG_CXAX
-	je betarpiskas1
-    cmp komandos_pav, offset komanda_XCHG_DXAX
-	je betarpiskas1
-    cmp komandos_pav, offset komanda_IRET
-	je betarpiskas1
+	je betarpiskas
+	cmp komandos_pav, offset komanda_IRET
+	je betarpiskas
 	cmp komandos_pav, offset komanda_TEST2
 	je betarpiskas
 	mov bx, baitu_skaicius
@@ -574,28 +566,28 @@ tai_XCHG_AXAX:
 	mov nera_adr, 1h
 	mov komandos_pav, 0
 	mov komandos_pav, offset komanda_XCHG_AXAX
-	mov komandos_pav_ilgis, 11
+	mov komandos_pav_ilgis, 9
 	jmp kokia_komanda_pab
 tai_XCHG_BXAX:
     mov apleidziam, 1h
 	mov nera_adr, 1h
 	mov komandos_pav, 0
 	mov komandos_pav, offset komanda_XCHG_BXAX
-	mov komandos_pav_ilgis, 11
+	mov komandos_pav_ilgis, 9
 	jmp kokia_komanda_pab
 tai_XCHG_DXAX:
     mov apleidziam, 1h
 	mov nera_adr, 1h
 	mov komandos_pav, 0
 	mov komandos_pav, offset komanda_XCHG_DXAX
-	mov komandos_pav_ilgis, 11
+	mov komandos_pav_ilgis, 9
 	jmp kokia_komanda_pab
  tai_XCHG_CXAX:
     mov apleidziam, 1h
 	mov nera_adr, 1h
 	mov komandos_pav, 0
 	mov komandos_pav, offset komanda_XCHG_CXAX
-	mov komandos_pav_ilgis, 11
+	mov komandos_pav_ilgis, 9
 	jmp kokia_komanda_pab   
 tai_INT:
 	mov apleidziam, 1h
