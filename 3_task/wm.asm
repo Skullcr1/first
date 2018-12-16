@@ -375,15 +375,15 @@ yra:
 	jmp betarpiskas
 	 pertraukimas1:
     jmp pertraukimas
-apleisk:
-	pop ax
-	or dBitas, 11111110b
-	not dBitas
-	cmp broken, 1h
-	jne skip2
-	mov modas, 00b	
-skip2:
-	call spausdink_operanda
+; apleisk:
+; 	pop ax
+; 	or dBitas, 11111110b
+; 	not dBitas
+; 	cmp broken, 1h
+; 	jne skip2
+; 	mov modas, 00b	
+; skip2:
+; 	call spausdink_operanda
 betarpiskas:
 	cmp betarpiskas_operandas, 1h
 	jne sicia2
@@ -522,9 +522,9 @@ kokia_komanda:
 	cmp pag, 11101100b	;IN AX/AL -----> DX/DL (NERA ADRESACIJOS BAITO)
 	je tai_INd_relative
 	cmp pag, 10000100b	;TEST reg   r/m
-	je tai_TEST_relative
+	je tai_TEST_relative ;test with reg?
 	cmp pag, 10101000b
-	je tai_TEST2_relative
+	je tai_TEST2_relative ; works
 	cmp pag, 10000110b	;XCHG reg r/m
 	je tai_XCHG_relative
 	cmp pag, 11110110b	;DIV arba DIV
@@ -676,7 +676,7 @@ tai_TEST2:
 tai_XCHG:
 	mov apleidziam, 1h
 	mov nera_adr, 0h
-	mov dBitas, 0h
+	mov dBitas, 1h
 	mov du_operandai, 1h
 	mov komandos_pav, 0
 	mov komandos_pav, offset komanda_XCHG
@@ -705,6 +705,16 @@ tai_XCHG:
 ; 	jmp kokia_komanda_pab
 	kokia_komanda_pab_relative_2:
 	jmp kokia_komanda_pab
+; tai_TEST_REG:
+; 	mov apleidziam, 1h
+; 	mov nera_adr, 0h
+; 	mov komandos_pav, 0
+; 	mov dBitas, 1h
+; 	mov du_operandai, 0h
+; 	call kitas_baitas ;gauname adresacijos baita
+; 	call skaidyk_adr_baita
+; 	call gauti_komandos_varda_TEST
+; 	jmp kokia_komanda_pab
 tai_DIV_IDIV_TEST:
 	mov apleidziam, 1h
 	mov nera_adr, 0h
@@ -756,6 +766,36 @@ tai_TEST3:
 
 	gauti_komandos_varda_pab:
 RET
+
+; gauti_komandos_varda_TEST:
+; 	mov komandos_pav, 0
+; 	cmp regas, 000b
+; 	je tai_DIV
+; 	cmp regas, 001b
+; 	je tai_IDIV
+; 	cmp regas, 010b
+; 	je tai_TEST3
+
+; tai_DIV: 
+; 	mov komandos_pav, offset komanda_DIV
+; 	mov komandos_pav_ilgis, 4
+; 	jmp gauti_komandos_varda_pab
+; tai_IDIV: 
+; 	mov komandos_pav, offset komanda_IDIV
+; 	mov komandos_pav_ilgis, 5
+; 	jmp gauti_komandos_varda_pab	
+; tai_TEST3:
+; 	mov komandos_pav, offset komanda_TEST
+; 	mov komandos_pav_ilgis, 5
+; 	mov betarpiskas_operandas, 1h
+; 	add komandos_ilgis, 4
+; 	cmp wBitas, 1h
+; 	je gauti_komandos_varda_pab
+; 	dec komandos_ilgis
+; 	jmp gauti_komandos_varda_pab
+
+; 	gauti_komandos_varda_pab:
+; RET
 ;-----------------------------------------------------------------------------------------------------------------------
 ;-----------------------------------------------------------------------------------------------------------------------
 spausdink_operanda:
