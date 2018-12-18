@@ -82,7 +82,10 @@
 	rm_111 db "[bx$"
 	
 	pref db "ds:$"
-	
+	komanda_XCHG_AXAX db "XCHG ax, ax$"
+    komanda_XCHG_BXAX db "XCHG bx, ax$"
+    komanda_XCHG_DXAX db "XCHG dx, ax$"  
+    komanda_XCHG_CXAX db "XCHG cx, ax$"
 	komanda_DIV db "DIV $"
 	komanda_IDIV db "IDIV $"
 	komanda_IRET db "IRET $"
@@ -232,7 +235,7 @@ disasm:					; pagrindine vieta, cia vyksta visas procesas
 	call skaitom_file
 	
 	cmp ax, 0
-	je uzdarom			; tada viskas jau
+	je uzdarom			; tada viskas jau nera daugiau in nuskaityma
 	call pertraukimas
 
 	cmp failo_pabaiga, 0h
@@ -332,15 +335,23 @@ neskaitom_adr:
 	cmp komandos_pav, offset komanda_IDIV
 	je betarpiskas1
 	cmp komandos_pav, offset komanda_nera
-	je betarpiskas
+	je betarpiskas1
 	cmp komandos_pav, offset komanda_INaxdx
-	je betarpiskas
+	je betarpiskas1
 	cmp komandos_pav, offset komanda_INaldx
-	je betarpiskas
+	je betarpiskas1
+	cmp komandos_pav, offset komanda_XCHG_AXAX
+	je betarpiskas1
+    cmp komandos_pav, offset komanda_XCHG_BXAX
+	je betarpiskas1
+    cmp komandos_pav, offset komanda_XCHG_CXAX
+	je betarpiskas1
+    cmp komandos_pav, offset komanda_XCHG_DXAX
+	je betarpiskas1
 	cmp komandos_pav, offset komanda_IRET
-	je betarpiskas
+	je betarpiskas1
 	cmp komandos_pav, offset komanda_TEST2
-	je betarpiskas
+	je betarpiskas1
 	mov bx, baitu_skaicius
 	mov al, buff[bx]
 	call printAL
@@ -378,7 +389,7 @@ skip2:
 	call spausdink_operanda
 betarpiskas:
 	cmp betarpiskas_operandas, 1h
-	jne sicia2
+	jne spausdink_enteri
 	mov ah, 40h
 	mov bx, handler2
 	mov cx,  2
@@ -389,7 +400,7 @@ betarpiskas:
 	je du_baitai
 	call kitas_baitas
 	call printAL
-	jmp sicia2
+	jmp spausdink_enteri
 	
 du_baitai:
 	call kitas_baitas
@@ -401,7 +412,7 @@ du_baitai:
 ;-----------------------------------------------------------------
 ;Spausdiname enteri
 ;-----------------------------------------------------------------
-sicia2:
+spausdink_enteri:
 	mov ah, 40h
 	mov bx, handler2
 	mov cx,  2
@@ -512,33 +523,48 @@ kokia_komanda:
 	je tai_XCHG_relative
 	cmp pag, 11110110b	;DIV arba DIV
 	je tai_DIV_IDIV_TEST_relative
-	mov regas, al
-	and regas, 111b
-	and al, 11111000b		;reg maskavimas
-	cmp al, 10010000b
-	je tai_XCHG2_relative
+	cmp al, 10010000b ; xchg axax
+	je tai_XCHG_AXAX_relative
+	cmp al, 10010011b ; xchg bxax
+	je tai_XCHG_BXAX_relative
+	cmp al, 10010010b ; xchg dxax
+	je tai_XCHG_DXAX_relative
+	cmp al, 10010001b ; xchg cxax
+	je tai_XCHG_CXAX_relative
+	; cmp al, 10000110b ; xchg lower/high bit and lower/high bit
+    ; je tai_XCHG_XhXl_relative
 	
 jmp komanda_neatpazinta
 
 
-    tai_INT_relative:
+tai_INT_relative:
     jmp tai_INT
-	tai_LES_relative:
+tai_LES_relative:
 	jmp tai_LES
-	tai_INd_relative:
+tai_INd_relative:
 	jmp tai_INd
-	tai_INp_relative:
+tai_INp_relative:
 	jmp tai_INp
-	tai_TEST_relative:
+tai_TEST_relative:
 	jmp tai_TEST
-	tai_TEST2_relative:
+tai_TEST2_relative:
 	jmp tai_TEST2
 tai_XCHG_relative:
  jmp tai_XCHG
-	tai_DIV_IDIV_TEST_relative:
+tai_DIV_IDIV_TEST_relative:
 	jmp tai_DIV_IDIV_TEST 
- tai_XCHG2_relative:
- jmp tai_XCHG2
+;  tai_XCHG2_relative:
+;  	jmp tai_XCHG2
+ tai_xchg_8bit_relative:
+
+tai_XCHG_AXAX_relative:
+    jmp tai_XCHG_AXAX
+tai_XCHG_BXAX_relative:
+    jmp tai_XCHG_BXAX
+tai_XCHG_DXAX_relative:
+    jmp tai_XCHG_DXAX
+tai_XCHG_CXAX_relative:
+    jmp tai_XCHG_CXAX
 tai_IRET:
 	mov apleidziam, 1h
 	mov nera_adr, 1h
@@ -632,29 +658,59 @@ tai_XCHG:
 	call kitas_baitas
 	call skaidyk_adr_baita
 	cmp modas, 11b
-	je kokia_komanda_pab3
+	je kokia_komanda_pab4
 	mov modas, 0011b
 	mov broken, 1h
 	add komandos_ilgis, 2
 	jmp kokia_komanda_pab
 
-
-tai_XCHG2:
-	mov xchg2, 1h
-	mov apleidziam, 1h
-	mov nera_adr, 0h
-	mov dBitas, 0h
-	mov wBitas, 1h
-	mov du_operandai, 1h
+tai_XCHG_AXAX:
+    mov apleidziam, 1h
+	mov nera_adr, 1h
 	mov komandos_pav, 0
-	mov komandos_pav, offset komanda_XCHG
-	mov komandos_pav_ilgis, 5
-	mov modas, 11b
-	;mov bl, regas
-	;mov remas, bl
+	mov komandos_pav, offset komanda_XCHG_AXAX
+	mov komandos_pav_ilgis, 11
 	jmp kokia_komanda_pab
-	kokia_komanda_pab3:
+	kokia_komanda_pab4:
+	jmp kokia_komanda_pab3
+tai_XCHG_BXAX:
+    mov apleidziam, 1h
+	mov nera_adr, 1h
+	mov komandos_pav, 0
+	mov komandos_pav, offset komanda_XCHG_BXAX
+	mov komandos_pav_ilgis, 11
 	jmp kokia_komanda_pab
+tai_XCHG_DXAX:
+    mov apleidziam, 1h
+	mov nera_adr, 1h
+	mov komandos_pav, 0
+	mov komandos_pav, offset komanda_XCHG_DXAX
+	mov komandos_pav_ilgis, 11
+	jmp kokia_komanda_pab
+ tai_XCHG_CXAX:
+    mov apleidziam, 1h
+	mov nera_adr, 1h
+	mov komandos_pav, 0
+	mov komandos_pav, offset komanda_XCHG_CXAX
+	mov komandos_pav_ilgis, 11
+	jmp kokia_komanda_pab   
+		kokia_komanda_pab3:
+	jmp kokia_komanda_pab
+; tai_XCHG2:
+; 	mov xchg2, 1h
+; 	mov apleidziam, 1h
+; 	mov nera_adr, 0h
+; 	mov dBitas, 0h
+; 	mov wBitas, 1h
+; 	mov du_operandai, 1h
+; 	mov komandos_pav, 0
+; 	mov komandos_pav, offset komanda_XCHG
+; 	mov komandos_pav_ilgis, 5
+; 	mov modas, 11b
+; 	;mov bl, regas
+; 	;mov remas, bl
+; 	jmp kokia_komanda_pab
+
 tai_DIV_IDIV_TEST:
 	mov apleidziam, 1h
 	mov nera_adr, 0h
