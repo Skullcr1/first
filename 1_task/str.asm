@@ -12,6 +12,10 @@ buffer_size EQU 255
     result_message    DB "Count of misplaced letters: $"
     misplaced_letters_count DB 0h, 24h
     ;end_of_string equ 0dh
+    kint1 DB 05h
+masyvas1 DB 04h, 06h, 3 dup (20h)
+masyvas2 DB 15 dup (07h)
+
 .code
 
 start:
@@ -19,149 +23,164 @@ start:
         MOV AX, @data                   ; 
         MOV DS, AX                      ; 
  
-	; ---------------------------------------------
-	; PROMPT USER START
-	; ---------------------------------------------
-    DATA_INPUT:
-        MOV AH, 09h
-        MOV DX, offset enter_message            ;prints welcome message
-        INT 21h
+	; ; ---------------------------------------------
+	; ; PROMPT USER START
+	; ; ---------------------------------------------
+    ; DATA_INPUT:
+    ;     MOV AH, 09h
+    ;     MOV DX, offset enter_message            ;prints welcome message
+    ;     INT 21h
        
-        MOV AH, 0Ah
-        MOV DX, offset input_buffer_reserved    ;
-        INT 21h
+    ;     MOV AH, 0Ah
+    ;     MOV DX, offset input_buffer_reserved    ;
+    ;     INT 21h
         
-        MOV	AH, 9
-        MOV	DX, offset end_of_string            ;prints '$'
-        INT	21h	
+    ;     MOV	AH, 9
+    ;     MOV	DX, offset end_of_string            ;prints '$'
+    ;     INT	21h	
         
              
-	; ---------------------------------------------
-	; PROMPT USER END
-	; ---------------------------------------------
+	; ; ---------------------------------------------
+	; ; PROMPT USER END
+	; ; ---------------------------------------------
 	
 	
-     LETTER_CASE:    ;preparing to check letter case
-        XOR CL, CL
-        MOV CL, input_data_length
-        LEA BX, buffer
-        MOV DL, 41h  ;symbol 'A'
-        MOV DH, 5Ah  ;symbol 'Z'
+    ;  LETTER_CASE:    ;preparing to check letter case
+    ;     XOR CL, CL
+    ;     MOV CL, input_data_length
+    ;     LEA BX, buffer
+    ;     MOV DL, 41h  ;symbol 'A'
+    ;     MOV DH, 5Ah  ;symbol 'Z'
                
-    CHECK_UPPER_CASE:   ;;checking if letter is [A;Z]
-        CMP [BX], DL    
-        JB KEEP_CASE
-        CMP [BX], DH
-        JA KEEP_CASE
-        ADD	byte ptr [BX], 20h  ;if it's upper case then add 20h to get [a;z]
+    ; CHECK_UPPER_CASE:   ;;checking if letter is [A;Z]
+    ;     CMP [BX], DL    
+    ;     JB KEEP_CASE
+    ;     CMP [BX], DH
+    ;     JA KEEP_CASE
+    ;     ADD	byte ptr [BX], 20h  ;if it's upper case then add 20h to get [a;z]
         
-    KEEP_CASE:  ;checking next symbol
-        INC BX 
-        DEC CL
-        CMP CL, 0
-        JNE CHECK_UPPER_CASE
+    ; KEEP_CASE:  ;checking next symbol
+    ;     INC BX 
+    ;     DEC CL
+    ;     CMP CL, 0
+    ;     JNE CHECK_UPPER_CASE
 
-    PREPARE_ITERATION_BUFFERS:  ;loading buffer into SI and DI
-        MOV SI, offset buffer
-        MOV DI, offset buffer
-        XOR AH, AH
-        MOV AL, input_data_length 
-        ADD DI, AX ;;point DI to the last symbol, 
-        SUB DI, 1  ;to get rid of last symbol which is cr
-        CMP SI, DI ;check if only one letter was provided
-        JE PRINT_MISPLACED_LETTERS
+    ; PREPARE_ITERATION_BUFFERS:  ;loading buffer into SI and DI
+    ;     MOV SI, offset buffer
+    ;     MOV DI, offset buffer
+    ;     XOR AH, AH
+    ;     MOV AL, input_data_length 
+    ;     ADD DI, AX ;;point DI to the last symbol, 
+    ;     SUB DI, 1  ;to get rid of last symbol which is cr
+    ;     CMP SI, DI ;check if only one letter was provided
+    ;     JE PRINT_MISPLACED_LETTERS
     
-    CHECK_IF_EVEN:  
-        MOV CL, input_data_length 
-        TEST CL, 1        ;using logical operation and to determine if it even or odd number
-        JZ ITERATE_LETTERS_EVEN
+    ; CHECK_IF_EVEN:  
+    ;     MOV CL, input_data_length 
+    ;     TEST CL, 1        ;using logical operation and to determine if it even or odd number
+    ;     JZ ITERATE_LETTERS_EVEN
         
-    ITERATE_LETTERS_ODD:
-        MOV AX, [SI]
-        MOV BX, [DI]
+    ; ITERATE_LETTERS_ODD:
+    ;     MOV AX, [SI]
+    ;     MOV BX, [DI]
         
-        INC SI ;take next letter
-        DEC DI ;take previous letter from the end
+    ;     INC SI ;take next letter
+    ;     DEC DI ;take previous letter from the end
         
-        PUSH AX
-        PUSH BX
-        CALL ADD_MISPLACED_LETTERS ;calling procedure
+    ;     PUSH AX
+    ;     PUSH BX
+    ;     CALL ADD_MISPLACED_LETTERS ;calling procedure
                        
-        CMP SI, DI  ;comparing to determine if we checked every symbol 
-        JNE ITERATE_LETTERS_ODD
-        JMP PRINT_MISPLACED_LETTERS
+    ;     CMP SI, DI  ;comparing to determine if we checked every symbol 
+    ;     JNE ITERATE_LETTERS_ODD
+    ;     JMP PRINT_MISPLACED_LETTERS
         
-    ITERATE_LETTERS_EVEN:
-        MOV AX, [SI]
-        MOV BX, [DI]
+    ; ITERATE_LETTERS_EVEN:
+    ;     MOV AX, [SI]
+    ;     MOV BX, [DI]
 
-        INC SI ;take next letter
-        DEC DI ;take previous letter from the end
+    ;     INC SI ;take next letter
+    ;     DEC DI ;take previous letter from the end
         
-        PUSH AX
-        PUSH BX
-        CALL ADD_MISPLACED_LETTERS
+    ;     PUSH AX
+    ;     PUSH BX
+    ;     CALL ADD_MISPLACED_LETTERS
         
-        MOV DX, DI
-        ADD DX, 1   ;cause it's even number, we have to add
+    ;     MOV DX, DI
+    ;     ADD DX, 1   ;cause it's even number, we have to add
         
-        CMP SI, DX
-        JNE ITERATE_LETTERS_EVEN
-        JMP PRINT_MISPLACED_LETTERS
+    ;     CMP SI, DX
+    ;     JNE ITERATE_LETTERS_EVEN
+    ;     JMP PRINT_MISPLACED_LETTERS
     
-    PRINT_MISPLACED_LETTERS:
-          ; XOR AX, AX
-        MOV	AH, 9
-        MOV	DX, offset result_message
-        INT	21h	
+    ; PRINT_MISPLACED_LETTERS:
+    ;       ; XOR AX, AX
+    ;     MOV	AH, 9
+    ;     MOV	DX, offset result_message
+    ;     INT	21h	
 
-     HEX_TO_DEC:
-                XOR BX, BX
-                XOR AX, AX
-                MOV     CL, 10
-                MOV AL, misplaced_letters_count
-                LOOP1:
+    ;  HEX_TO_DEC:
+    ;             XOR BX, BX
+    ;             XOR AX, AX
+    ;             MOV     CL, 10
+    ;             MOV AL, misplaced_letters_count
+    ;             LOOP1:
 
-                DIV CL
-                inc BX
-                PUSH AX
-                XOR AH, AH
+    ;             DIV CL
+    ;             inc BX
+    ;             PUSH AX
+    ;             XOR AH, AH
 
-                TEST al, al
-                jnz LOOP1
+    ;             TEST al, al
+    ;             jnz LOOP1
 
-                LOOP2:
-                POP DX
-                MOV DL, DH
-                ADD DL, '0'
-                MOV AH, 02h
-                INT 21h
-                dec bx
-                jnz LOOP2
+    ;             LOOP2:
+    ;             POP DX
+    ;             MOV DL, DH
+    ;             ADD DL, '0'
+    ;             MOV AH, 02h
+    ;             INT 21h
+    ;             dec bx
+    ;             jnz LOOP2
+
+
+
+MOV SI, offset kint1
+MOV CX, 05h
+MOV AX, 10h
+Ciklas:
+ADD SI, 02h
+ADD [SI], AL
+INC AL
+LOOP Ciklas
+
+
+
+
        
     EXIT:
         MOV AH, 4ch             ; griztame i dos'a
         INT 21h                 ; dos'o INTeruptas
         
-    ADD_MISPLACED_LETTERS PROC
-        PUSH BP ; save stack
-        MOV BP, SP
-        XOR CL, CL
+    ; ADD_MISPLACED_LETTERS PROC
+    ;     PUSH BP ; save stack
+    ;     MOV BP, SP
+    ;     XOR CL, CL
         
-        MOV BX,[BP+4] ; get last letter
-        MOV AX,[BP+6] ; get first letter
+    ;     MOV BX,[BP+4] ; get last letter
+    ;     MOV AX,[BP+6] ; get first letter
         
-        CMP AL, BL
-        JE END_ADD_MISPLACED_LETTERS 
-        INC CL
-        SHL CL,1
+    ;     CMP AL, BL
+    ;     JE END_ADD_MISPLACED_LETTERS 
+    ;     INC CL
+    ;     SHL CL,1
         
-        ADD misplaced_letters_count, CL
+    ;     ADD misplaced_letters_count, CL
         
-        END_ADD_MISPLACED_LETTERS:
+    ;     END_ADD_MISPLACED_LETTERS:
         
-        MOV SP, BP ;restore stack
-        POP BP
-        RET ; POP parameters off stack and return
-    ADD_MISPLACED_LETTERS ENDP
+    ;     MOV SP, BP ;restore stack
+    ;     POP BP
+    ;     RET ; POP parameters off stack and return
+    ; ADD_MISPLACED_LETTERS ENDP
 end start

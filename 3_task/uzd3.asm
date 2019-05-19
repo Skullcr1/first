@@ -114,7 +114,8 @@
 	enteris db 13,10,"$"
 	kablelis_tarpas db ", $"
 	
-	komandos_pradzia dw 0
+	komanda_nuo_pradzios dw 0
+	komandos_pradzia dw 100h
 	komandos_ilgis db ?
 	baitu_skaicius dw 0
 	
@@ -421,7 +422,8 @@ spausdink_enteri:
 	
 	mov dx, baitu_skaicius
 	mov komandos_pradzia, dx
-	
+
+
 	mov  dx, nuskaityti_baitai
 	cmp baitu_skaicius,  dx
 	jl pertraukimas1
