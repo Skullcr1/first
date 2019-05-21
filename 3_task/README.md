@@ -1,4 +1,4 @@
-# 3 uzduotis
+# 3 užduotis
 
 
 ## Aprašymas
