@@ -2,8 +2,6 @@
 
 
 ## Aprašymas
-
-
-## TODO
+Sukurti disassemblerį, kuris atpažytų XCHG, DIV, IDIV, IRET, IN, TEST, LES, INT komandas.
 
 
